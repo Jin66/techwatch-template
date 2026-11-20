@@ -65,7 +65,7 @@ Then make it yours, before the first digest:
 | --- | --- |
 | `mise run veille` | A new digest, committed and pushed. Each run gets its own file, named after its time. |
 | `mise run veille 2026-11-15` | The same, with the items since that date. |
-| `claude "/veille"` | A new digest, written but not committed. |
+| `claude "/veille"` | A new digest in an interactive session; Claude then asks whether to keep it (commit and push) or drop it. |
 | `mise run sources` | Health of every feed: item count, newest date, failures. |
 | `journalctl --user -u techwatch` | Logs of the daily runs. |
 
@@ -73,7 +73,8 @@ Then make it yours, before the first digest:
 
 For [Herdr](https://herdr.dev) users, `herdr/techwatch/` is a mod that opens as a dialog:
 the digests on the left, the selected one rendered on the right, and a field to start a
-run, with or without a start date.
+run, with or without a start date: Claude writes the digest in a new tab, then asks
+whether to keep it.
 
 ```sh
 mise run install-herdr-mod   # links the mod into ~/.config/herdr-app/mods/

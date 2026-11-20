@@ -3,6 +3,7 @@
     "allow": [
       "Bash(uv run techwatch-fetch)",
       "Bash(uv run techwatch-fetch:*)",
+      "Bash(scripts/keep.sh:*)",
       "Read",
       "Edit(digests/**)",
       "WebFetch"

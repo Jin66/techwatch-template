@@ -22,7 +22,7 @@ mise run fix            # auto-format and auto-fix lint
 mise run sources        # health of every feed: item count, newest date, failures
 mise run veille         # write, commit and push a new digest (needs network and claude)
 mise run install-timer  # install the systemd user timer (08:00, catches up after boot)
-claude "/veille 2026-11-15"  # digest of the items since that date (no commit)
+claude "/veille 2026-11-15"  # interactive digest since that date, then asks whether to keep it
 ```
 
 Run one test: `uv run pytest tests/test_fetch.py -k atom`. Tests need no network.
@@ -36,7 +36,8 @@ digests/                    one file per run (French), written by `/veille`
 src/techwatch/fetch.py      feed collection: window since last digest, dedup by URL
 .claude/commands/veille.md  the prompt that turns collected items into a digest
 .claude/settings.json       permissions that let `claude -p` run unattended
-scripts/daily.sh            runs `/veille` headless, then commits and pushes the digest
+scripts/daily.sh            runs `/veille --unattended` headless, then keeps the digest
+scripts/keep.sh             commits and pushes one digest (daily.sh, and /veille on request)
 deploy/systemd/             user service and timer
 herdr/techwatch/            Herdr mod: browse digests, start a run
 ```

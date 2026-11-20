@@ -1,6 +1,6 @@
 // TechWatch: read the daily digests and start a new run, without leaving Herdr.
-// Opened as a dialog by mod.open:techwatch (ctrl-shift-d). Starting a run writes, commits and
-// pushes a new digest, from the given date on if there is one.
+// Opened as a dialog by mod.open:techwatch (ctrl-shift-d). Starting a run opens Claude on
+// /veille in a tab, from the given date on if there is one; Claude asks whether to keep it.
 
 import { View, div } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input, TextView } from "gpui-base";
@@ -44,7 +44,7 @@ export default class TechWatch extends View {
       cx.notify();
       return;
     }
-    const argv = ["mise", "run", "veille", ...(date ? [date] : [])];
+    const argv = ["claude", date ? `/veille ${date}` : "/veille"];
     const tab = date ? `veille depuis ${date}` : "veille";
     closeOverlay(props().overlay);
     const space = spaces().find((s) => s.folder === this.repo);
@@ -70,7 +70,7 @@ export default class TechWatch extends View {
         .child(Input.new(this.input).flex_1().h(34).px(10).rounded(8).border_1().border_color(t.input).bg(t.background).text_size(12.5))
         .child(button("tw-run", "Lancer la veille", (_e, cx) => this.launch(cx))))
       .child(div().text_size(11.5).text_color(this.error ? t.blocked : t.dim).child(this.error ??
-        "Écrit, commite et pousse un nouveau digest, sans écraser ceux du jour. Avec une date : les articles depuis ce jour."))
+        "Claude écrit un nouveau digest dans un onglet, puis te demande s'il faut le garder (commit et push). Avec une date : les articles depuis ce jour."))
       .child(h_flex().flex_1().min_h(0).items_stretch().gap(14) // h_flex centers its items: the columns must fill the height
         .child(v_flex().id("tw-list").w(130).flex_none().min_h(0).gap(2).overflow_y_scroll()
           .children(this.dates.length ? this.dates.map(row) : [div().text_size(12).text_color(t.dim).child("Aucun digest")]))

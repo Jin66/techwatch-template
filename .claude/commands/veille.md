@@ -1,11 +1,11 @@
 ---
-description: Write today's tech watch digest in digests/
-argument-hint: "[YYYY-MM-DD: collect from this date on]"
+description: Write a tech watch digest in digests/, then offer to keep it
+argument-hint: "[YYYY-MM-DD: collect from this date on] [--unattended]"
 ---
 
-Write today's tech watch digest.
+Write a tech watch digest. Arguments: $ARGUMENTS
 
-1. Run `uv run techwatch-fetch` from the repository root; if a date was given ($ARGUMENTS),
+1. Run `uv run techwatch-fetch` from the repository root; if the arguments hold a date,
    run `uv run techwatch-fetch --since <that date>`. It prints JSON: the recent items of
    every feed in `sources.md` that no earlier digest already proposed, the feeds that
    failed, `covered_stories`, the titles of the items of the last 14 days of digests, and
@@ -39,4 +39,7 @@ type, an action to take.>
 
    If some feeds failed, end with a `## Sources en échec` section listing their URL and
    error, so they can be fixed in `sources.md`.
-5. Do not commit; `scripts/daily.sh` does it. Print only the path of the digest.
+5. With `--unattended` in the arguments, nobody is there to answer: print only the path of
+   the digest and stop; `scripts/daily.sh` commits it. Otherwise, show the digest's titles
+   and ask the person (AskUserQuestion) whether to keep it. Keep: run
+   `scripts/keep.sh <digest>`, which commits and pushes it. Drop: delete the file.
