@@ -8,7 +8,7 @@ import { v_flex, h_flex, InputState, Input, TextView } from "gpui-base";
 import { run, props, closeOverlay, theme, exec, appHome, readTextFile, spaces } from "herdr";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const ITEM_RE = /^## \d+\. \[(.+)\]\((.+?)\)/;
+const ITEM_RE = /^## \d+\. \[(.+)\]\((\S+)\)\s*$/m; // URLs hold no space, but may hold parentheses
 
 // The digest cut at its `## ` headings: items carry their title and URL, so they can be voted on.
 const sectionsOf = (text) => text.split(/\n(?=## )/).map((part) => {
@@ -19,7 +19,9 @@ const sectionsOf = (text) => text.split(/\n(?=## )/).map((part) => {
 // reactions.jsonl: one vote per line, the last one on a URL counts (see techwatch/reactions.py).
 const votesOf = (text) => {
   const votes = {};
-  for (const line of (text ?? "").split("\n")) if (line.trim()) { const e = JSON.parse(line); votes[e.url] = e.vote; }
+  for (const line of (text ?? "").split("\n")) {
+    try { const e = JSON.parse(line); votes[e.url] = e.vote; } catch { /* a blank or hand-broken line costs one vote, not the dialog */ }
+  }
   return votes;
 };
 
@@ -56,13 +58,20 @@ export default class TechWatch extends View {
   }
 
   vote(section, vote, cx) {
-    const next = this.votes[section.url] === vote ? 0 : vote; // a second click takes the vote back
+    const before = this.votes[section.url];
+    const next = before === vote ? 0 : vote; // a second click takes the vote back
     this.votes[section.url] = next;
     cx.notify();
     cx.spawn(async (cx) => {
+      // --title=… in one element: a title starting with "-" would read as an option.
       const r = await exec("uv", ["run", "--project", this.repo, "techwatch-react", String(next), section.url,
-        "--title", section.title, "--file", `${this.repo}/reactions.jsonl`], { cwd: this.repo });
-      if (r.code !== 0) { this.error = `Vote non enregistré : ${(r.stderr || r.stdout).trim().split("\n").pop()}`; cx.notify(); }
+        `--title=${section.title}`, `--file=${this.repo}/reactions.jsonl`], { cwd: this.repo })
+        .catch((e) => ({ code: -1, stderr: String(e) }));
+      if (r.code !== 0) {
+        this.votes[section.url] = before;
+        this.error = `Vote non enregistré : ${(r.stderr || r.stdout || "").trim().split("\n").pop()}`;
+        cx.notify();
+      }
     });
   }
 

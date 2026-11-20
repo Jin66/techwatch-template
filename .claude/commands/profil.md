@@ -17,6 +17,7 @@ Adjust the watch profile to what the person liked and disliked.
    source that only gets 👎 is a suggestion for `sources.md`, not an edit.
 5. Ask the person which edits to apply (AskUserQuestion, several answers allowed), and
    apply only those, in French like the rest of `profil.md`.
-6. Commit `profil.md` and `reactions.jsonl` together, message
+6. Commit `profil.md` and `reactions.jsonl` only, whatever else is staged
+   (`git commit -m … -- profil.md reactions.jsonl`), message
    `🎯 docs(profil): adjust the profile to recent reactions`, with a body listing the
    applied edits, then push.

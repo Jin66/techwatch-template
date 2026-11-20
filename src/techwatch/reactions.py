@@ -15,8 +15,11 @@ def record(file: Path, url: str, vote: int, title: str = "", note: str = "", day
     entry = {"date": day or date.today().isoformat(), "url": url, "title": title, "vote": vote}
     if note:
         entry["note"] = note
+    # A hand edit may drop the final newline: without one, this vote would fuse with the last.
+    text = file.read_text(encoding="utf-8") if file.exists() else ""
+    start = "\n" if text and not text.endswith("\n") else ""
     with file.open("a", encoding="utf-8") as out:
-        out.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        out.write(start + json.dumps(entry, ensure_ascii=False) + "\n")
 
 
 def votes(file: Path) -> dict[str, int]:
@@ -24,10 +27,14 @@ def votes(file: Path) -> dict[str, int]:
     if not file.exists():
         return {}
     last = {}
-    for line in file.read_text(encoding="utf-8").splitlines():
-        if line.strip():
+    for number, line in enumerate(file.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
             entry = json.loads(line)
             last[entry["url"]] = entry["vote"]
+        except (ValueError, KeyError, TypeError):
+            print(f"{file}:{number}: not a vote, skipped", file=sys.stderr)
     return {url: vote for url, vote in last.items() if vote}
 
 
@@ -37,7 +44,8 @@ def main() -> int:
     parser.add_argument("url")
     parser.add_argument("--title", default="")
     parser.add_argument("--note", default="")
-    parser.add_argument("--file", type=Path, default=Path("reactions.jsonl"))
+    # The repository's file, wherever the command runs from (the project is installed editable).
+    parser.add_argument("--file", type=Path, default=Path(__file__).resolve().parents[2] / "reactions.jsonl")
     args = parser.parse_args()
     record(args.file, args.url, args.vote, title=args.title, note=args.note)
     return 0

@@ -23,3 +23,10 @@ def test_a_note_is_kept(tmp_path: Path):
     file = tmp_path / "reactions.jsonl"
     record(file, "https://ex.com/a", 1, title="A", note="exactement mon sujet", day="2026-11-20")
     assert json.loads(file.read_text())["note"] == "exactement mon sujet"
+
+
+def test_a_broken_line_costs_one_vote_and_the_next_vote_starts_a_new_line(tmp_path: Path):
+    file = tmp_path / "reactions.jsonl"
+    file.write_text('{"url": "https://ex.com/a", "vote": 1}\nnot json')
+    record(file, "https://ex.com/b", -1, day="2026-11-20")
+    assert votes(file) == {"https://ex.com/a": 1, "https://ex.com/b": -1}
