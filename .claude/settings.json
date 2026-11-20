@@ -4,6 +4,7 @@
       "Bash(uv run techwatch-fetch)",
       "Bash(uv run techwatch-fetch:*)",
       "Bash(scripts/keep.sh:*)",
+      "Bash(uv run techwatch-stack:*)",
       "Read",
       "Edit(digests/**)",
       "WebFetch"

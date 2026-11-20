@@ -22,7 +22,8 @@ sources.md ──> techwatch-fetch ──> JSON of new items ──> /veille (Cl
    receives the titles of the last 14 days of digests, so a story already covered under
    another URL is not proposed again.
 3. **Write.** Each item gets a two-sentence summary and a "why it matters to you" line
-   tied to the profile. Feeds that failed are listed at the end, so `sources.md` can be
+   tied to the profile. For a release, a deprecation or a vulnerability, `techwatch-stack`
+   tells which of your repositories use it and in which version, so the line names them. Feeds that failed are listed at the end, so `sources.md` can be
    fixed.
 4. **Publish.** `scripts/keep.sh` commits the digest and pushes it. Run by hand, `/veille`
    first asks whether to keep the digest; the daily job, `scripts/daily.sh`, keeps it
@@ -73,6 +74,22 @@ Then make it yours, before the first digest:
 
 Each run writes its own file, `digests/YYYY-MM-DD-HHMM.md`: a second run on the same day
 never overwrites the first.
+
+## Your stack
+
+`techwatch-stack` reads the build and container files of the git checkouts under
+`~/Code` (or the colon-separated folders of `TECHWATCH_CODE`): Gradle version catalogs
+and `build.gradle(.kts)`, Maven `pom.xml`, `pyproject.toml` with `uv.lock`,
+`package.json`, Dockerfile `FROM` and compose `image:` lines, and runtime versions from
+mise, `.tool-versions`, `.python-version` and Java toolchains.
+
+```sh
+uv run techwatch-stack                         # what was found, per kind
+uv run techwatch-stack "spring boot" nginx     # which repositories use them, per version
+```
+
+Nothing is stored: each call reads the working trees as they are. Versions set elsewhere
+(a BOM, an Ansible variable, a CI parameter) are not seen.
 
 ## Reactions and an evolving profile
 

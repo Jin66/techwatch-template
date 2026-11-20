@@ -8,6 +8,7 @@ dependencies = []
 [project.scripts]
 techwatch-fetch = "techwatch.fetch:main"
 techwatch-react = "techwatch.reactions:main"
+techwatch-stack = "techwatch.stack:main"
 
 [dependency-groups]
 dev = ["pytest", "pytest-cov", "ruff", "ty"]

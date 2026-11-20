@@ -22,7 +22,13 @@ Write a tech watch digest. Arguments: $ARGUMENTS
    brings a real new fact: then say in its summary what is new since the earlier item.
    When a title and summary are too thin to judge, you may fetch the page, for at most 5
    items.
-4. Write the file named by `digest`, in French, in exactly this format:
+4. For each picked item about a release, a deprecation or a vulnerability of a library,
+   framework, container image or runtime, check where it is used: run
+   `uv run techwatch-stack <names>` once, with every name as a separate quoted term
+   (`"spring boot" nginx temurin`). It prints, per version, the repositories that use it.
+   Use it in "Pourquoi pour toi": name the affected repositories and their versions, or
+   say that none uses it. Write only what it printed; never guess a version.
+5. Write the file named by `digest`, in French, in exactly this format:
 
 ```markdown
 # Veille du <date in French, e.g. mardi 17 novembre 2026>
@@ -44,7 +50,7 @@ type, an action to take.>
 
    If some feeds failed, end with a `## Sources en échec` section listing their URL and
    error, so they can be fixed in `sources.md`.
-5. With `--unattended` in the arguments, nobody is there to answer: print only the path of
+6. With `--unattended` in the arguments, nobody is there to answer: print only the path of
    the digest and stop; `scripts/daily.sh` commits it. Otherwise, show the digest's titles
    and ask the person (AskUserQuestion) whether to keep it. Keep: run
    `scripts/keep.sh <digest>`, which commits and pushes it. Drop: delete the file.
