@@ -23,6 +23,7 @@ mise run sources        # health of every feed: item count, newest date, failure
 mise run veille         # write, commit and push a new digest (needs network and claude)
 mise run install-timer  # install the systemd user timer (08:00, catches up after boot)
 claude "/veille 2026-11-15"  # interactive digest since that date, then asks whether to keep it
+claude "/veille monitoring Java"  # the same, ranking first what matches this focus
 ```
 
 Run one test: `uv run pytest tests/test_fetch.py -k atom`. Tests need no network.

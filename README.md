@@ -66,6 +66,7 @@ Then make it yours, before the first digest:
 | --- | --- |
 | `claude "/veille"` | A new digest in an interactive session; Claude then asks whether to keep it (commit and push) or drop it. |
 | `claude "/veille 2026-11-15"` | The same, with the items since that date. |
+| `claude "/veille regarde en particulier le monitoring Java"` | The same, ranking first what matches this focus (a date can come before it). |
 | `mise run veille [2026-11-15]` | The daily job by hand: a new digest, headless, committed and pushed without asking. |
 | `mise run sources` | Health of every feed: item count, newest date, failures. |
 | `journalctl --user -u techwatch` | Logs of the daily runs. |
@@ -77,7 +78,7 @@ never overwrites the first.
 
 For [Herdr](https://herdr.dev) users, `herdr/techwatch/` is a mod that opens as a dialog:
 the digests on the left, the selected one rendered on the right, and a field to start a
-run, with or without a start date: Claude writes the digest in a new tab, then asks
+run, with an optional start date and focus: Claude writes the digest in a new tab, then asks
 whether to keep it.
 
 ![The TechWatch dialog in Herdr: digests by date on the left, the selected digest on the right](docs/herdr-mod.png)

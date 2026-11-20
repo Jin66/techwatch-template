@@ -1,6 +1,6 @@
 ---
 description: Write a tech watch digest in digests/, then offer to keep it
-argument-hint: "[YYYY-MM-DD: collect from this date on] [--unattended]"
+argument-hint: "[YYYY-MM-DD: collect from this date on] [focus for this run, free text] [--unattended]"
 ---
 
 Write a tech watch digest. Arguments: $ARGUMENTS
@@ -11,19 +11,24 @@ Write a tech watch digest. Arguments: $ARGUMENTS
    failed, `covered_stories`, the titles of the items of the last 14 days of digests, and
    `digest`, the file to write.
 2. Read `profil.md`: it is the filter. Keep only what matches its interests and its stack,
-   and drop what its "Ce que je ne veux pas" section excludes.
+   and drop what its "Ce que je ne veux pas" section excludes. Any other text in the
+   arguments (neither the date nor `--unattended`) is a focus for this run only, such as
+   "regarde en particulier le monitoring Java": rank first the items that match it, still
+   within the profile's exclusions. If few or none match, say so rather than stretching it.
 3. Pick **between 5 and 10 items**, never more. Fewer good items beat a padded list; if
    fewer than 5 deserve it, keep fewer and say so. Prefer a primary source over a
    summary of it, and keep one item per story. Drop an item whose story is already in
    `covered_stories` (same flaw, release or announcement under another URL), unless it
-   brings a real new fact: then say in its summary what is new since the earlier item. When a title and summary are too thin to
-   judge, you may fetch the page, for at most 5 items.
+   brings a real new fact: then say in its summary what is new since the earlier item.
+   When a title and summary are too thin to judge, you may fetch the page, for at most 5
+   items.
 4. Write the file named by `digest`, in French, in exactly this format:
 
 ```markdown
 # Veille du <date in French, e.g. mardi 17 novembre 2026>
 
 > <N> articles parcourus sur <feeds_ok> sources · <K> retenus
+> Orientation : <the focus, only when one was given>
 
 ## 1. [<title, translated to French if it is in English>](<url>)
 
