@@ -76,6 +76,8 @@ the digests on the left, the selected one rendered on the right, and a field to 
 run, with or without a start date: Claude writes the digest in a new tab, then asks
 whether to keep it.
 
+![The TechWatch dialog in Herdr: digests by date on the left, the selected digest on the right](docs/herdr-mod.png)
+
 ```sh
 mise run install-herdr-mod   # links the mod into ~/.config/herdr-app/mods/
 ```
