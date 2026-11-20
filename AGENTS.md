@@ -1,0 +1,69 @@
+# Agent instructions for TechWatch
+
+Read this before changing anything. It applies to every coding agent and to humans alike.
+`CLAUDE.md` only imports this file.
+
+## What this project is
+
+A personal daily tech watch. A script collects the recent items of the feeds listed in
+`sources.md`; Claude Code filters them against `profil.md` and writes a digest of 5 to 10
+items in `digests/YYYY-MM-DD.md`, which `scripts/daily.sh` commits.
+
+Base branch: `main`.
+
+## Setup and commands
+
+```sh
+mise install            # python and uv
+mise run install        # dependencies (dev tools only; the fetcher uses the stdlib)
+
+mise run check          # lint + format + types + tests  <- green before any commit
+mise run fix            # auto-format and auto-fix lint
+mise run sources        # health of every feed: item count, newest date, failures
+mise run veille         # write, commit and push today's digest (needs network and claude)
+mise run install-timer  # install the systemd user timer (08:00, catches up after boot)
+claude "/veille 2026-11-15"  # digest of the items since that date (no commit)
+```
+
+Run one test: `uv run pytest tests/test_fetch.py -k atom`. Tests need no network.
+
+## Layout
+
+```
+sources.md                  feeds, one `- <url>` per line under a `## <category>`
+profil.md                   the filter: interests, stack, exclusions (French)
+digests/                    one digest per day (French), written by `/veille`
+src/techwatch/fetch.py      feed collection: window since last digest, dedup by URL
+.claude/commands/veille.md  the prompt that turns collected items into a digest
+.claude/settings.json       permissions that let `claude -p` run unattended
+scripts/daily.sh            runs `/veille` headless, then commits and pushes the digest
+deploy/systemd/             user service and timer
+```
+
+A URL that appears in any digest is never proposed again: `fetch.py` reads them back. The
+same story under another URL is caught by `/veille`, which compares against the titles of
+the last 14 days of digests (`covered_stories`).
+Renaming or rewriting old digests therefore changes what gets proposed.
+
+## Conventions
+
+- **Language**: code, comments, commit messages and docs in English; `profil.md` and
+  digests are in French, the reader's language.
+- **Comments** explain the *why*, never the *what*.
+- **Fetcher**: standard library only, so the daily job has no dependency to break.
+- **Commits**: `<gitmoji> <type>(<scope>): <imperative subject>`, one theme per commit,
+  `mise run check` green. Digests: `📰 docs(digest): add digest of YYYY-MM-DD`.
+
+## Documentation
+
+If documentation misled you (wrong command, dead path, missing pitfall), fix it in the same
+commit: the smallest edit that would have prevented the mistake.
+
+## Pitfalls we already paid for
+
+- Some health sites (Healthcare IT News, MobiHealthNews, Digital Health) answer 403 to
+  scripts; TICsanté and the ANS have no working RSS. Check a new feed with
+  `mise run sources` before adding it.
+- Reddit serves one anonymous RSS request per minute and per IP (429 beyond), and on
+  2026-11-18 it began answering 404 to every anonymous feed. Reddit needs the official
+  API with an OAuth app; do not work around the block.

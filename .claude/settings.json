@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run techwatch-fetch)",
+      "Bash(uv run techwatch-fetch:*)",
+      "Read",
+      "Edit(digests/**)",
+      "WebFetch"
+    ]
+  }
+}
