@@ -68,6 +68,19 @@ Then make it yours, before the first digest:
 | `mise run sources` | Health of every feed: item count, newest date, failures. |
 | `journalctl --user -u techwatch` | Logs of the daily runs. |
 
+## Herdr mod
+
+For [Herdr](https://herdr.dev) users, `herdr/techwatch/` is a mod that opens as a dialog:
+the digests on the left, the selected one rendered on the right, and a field to start a
+run, with or without a start date.
+
+```sh
+mise run install-herdr-mod   # links the mod into ~/.config/herdr-app/mods/
+```
+
+Then bind a key in `~/.config/herdr-app/keys.json`, under `global`:
+`"ctrl-shift-d": "mod.open:techwatch"`.
+
 ## Things to know
 
 - **Permissions.** `.claude/settings.json` lets the headless run use only the fetcher,

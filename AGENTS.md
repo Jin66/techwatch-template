@@ -38,6 +38,7 @@ src/techwatch/fetch.py      feed collection: window since last digest, dedup by 
 .claude/settings.json       permissions that let `claude -p` run unattended
 scripts/daily.sh            runs `/veille` headless, then commits and pushes the digest
 deploy/systemd/             user service and timer
+herdr/techwatch/            Herdr mod: browse digests, start a run
 ```
 
 A URL that appears in any digest is never proposed again: `fetch.py` reads them back. The

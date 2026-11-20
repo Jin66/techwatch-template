@@ -47,3 +47,7 @@ run = [
     "systemctl --user daemon-reload",
     "systemctl --user enable --now techwatch.timer",
 ]
+
+[tasks.install-herdr-mod]
+description = "Link the Herdr mod that reads digests and starts a run (ctrl-shift-d once bound)"
+run = "ln -sfn {{config_root}}/herdr/techwatch ~/.config/herdr-app/mods/techwatch"
