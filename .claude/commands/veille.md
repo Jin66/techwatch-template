@@ -8,7 +8,8 @@ Write today's tech watch digest.
 1. Run `uv run techwatch-fetch` from the repository root; if a date was given ($ARGUMENTS),
    run `uv run techwatch-fetch --since <that date>`. It prints JSON: the recent items of
    every feed in `sources.md` that no earlier digest already proposed, the feeds that
-   failed, and `covered_stories`, the titles of the items of the last 14 days of digests.
+   failed, `covered_stories`, the titles of the items of the last 14 days of digests, and
+   `digest`, the file to write.
 2. Read `profil.md`: it is the filter. Keep only what matches its interests and its stack,
    and drop what its "Ce que je ne veux pas" section excludes.
 3. Pick **between 5 and 10 items**, never more. Fewer good items beat a padded list; if
@@ -17,7 +18,7 @@ Write today's tech watch digest.
    `covered_stories` (same flaw, release or announcement under another URL), unless it
    brings a real new fact: then say in its summary what is new since the earlier item. When a title and summary are too thin to
    judge, you may fetch the page, for at most 5 items.
-4. Write `digests/<today, YYYY-MM-DD>.md`, in French, in exactly this format:
+4. Write the file named by `digest`, in French, in exactly this format:
 
 ```markdown
 # Veille du <date in French, e.g. mardi 17 novembre 2026>

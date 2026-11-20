@@ -17,7 +17,9 @@ ATOM = "{http://www.w3.org/2005/Atom}"
 RSS1 = "{http://purl.org/rss/1.0/}"
 DC = "{http://purl.org/dc/elements/1.1/}"
 URL_RE = re.compile(r"https?://[^\s)>\]]+")
-DIGEST_NAME_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})\.md$")
+# YYYY-MM-DD-HHMM.md, so a second run on the same day never overwrites the first; older
+# digests are named YYYY-MM-DD.md.
+DIGEST_NAME_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})(?:-\d{4})?\.md$")
 DIGEST_ITEM_RE = re.compile(r"^## \d+\. \[(.+)\]\(", re.MULTILINE)
 MAX_ITEMS_PER_FEED = 15
 MIN_WINDOW = timedelta(hours=36)
@@ -197,6 +199,7 @@ def collect(sources_file: Path, digests: Path, now: datetime, since: datetime | 
         "feeds_ok": scanned,
         "feeds_failed": failures,
         "covered_stories": covered_stories(digests, now),
+        "digest": str(digests / f"{now.astimezone():%Y-%m-%d-%H%M}.md"),
         "items": sorted(items, key=lambda i: (i["category"], i["published"])),
     }
 

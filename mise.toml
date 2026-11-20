@@ -31,7 +31,7 @@ description = "Everything that must be green before any commit"
 depends = ["lint", "format", "types", "test"]
 
 [tasks.veille]
-description = "Write, commit and push today's digest (what the daily timer runs)"
+description = "Write, commit and push a new digest; `mise run veille 2026-11-15` collects since that day"
 run = "scripts/daily.sh"
 
 [tasks.sources]

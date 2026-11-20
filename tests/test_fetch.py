@@ -3,6 +3,7 @@ from pathlib import Path
 
 from techwatch.fetch import (
     clean_text,
+    collect,
     covered_stories,
     parse_date,
     parse_feed,
@@ -87,8 +88,15 @@ def test_window_is_at_least_36h_and_at_most_7_days(tmp_path: Path):
 
 def test_covered_stories_keeps_item_titles_of_the_last_14_days(tmp_path: Path):
     (tmp_path / "2026-11-01.md").write_text("## 1. [Too old](https://ex.com/o)\n")
-    (tmp_path / "2026-11-16.md").write_text(
+    (tmp_path / "2026-11-16-0815.md").write_text(
         "# Veille\n## 1. [Faille [NGINX] HTTP/2](https://ex.com/n)\n## Sources en échec\n"
     )
     now = datetime(2026, 11, 17, 6, tzinfo=UTC)
     assert covered_stories(tmp_path, now) == ["Faille [NGINX] HTTP/2"]
+
+
+def test_collect_names_the_digest_after_the_local_time(tmp_path: Path):
+    (tmp_path / "sources.md").write_text("")
+    now = datetime(2026, 11, 17, 6, 5, tzinfo=UTC)
+    digest = collect(tmp_path / "sources.md", tmp_path, now)["digest"]
+    assert digest == str(tmp_path / f"{now.astimezone():%Y-%m-%d-%H%M}.md")

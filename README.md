@@ -9,7 +9,7 @@ One place to read, no feed reader to scroll, and a history you can grep.
 ## How it works
 
 ```
-sources.md ──> techwatch-fetch ──> JSON of new items ──> /veille (Claude Code) ──> digests/YYYY-MM-DD.md
+sources.md ──> techwatch-fetch ──> JSON of new items ──> /veille (Claude Code) ──> digests/YYYY-MM-DD-HHMM.md
                 (Python, stdlib)                           filters with profil.md      committed and pushed
 ```
 
@@ -25,7 +25,8 @@ sources.md ──> techwatch-fetch ──> JSON of new items ──> /veille (Cl
    tied to the profile. Feeds that failed are listed at the end, so `sources.md` can be
    fixed.
 4. **Publish.** `scripts/daily.sh` commits the digest and pushes it. A systemd user timer
-   runs it at 08:00 and catches up at the next boot when the machine was off.
+   runs it at 08:00, catches up at the next boot when the machine was off, and skips the
+   day if a digest was already written by hand.
 
 The digest and the profile are in French. Change the language in
 `.claude/commands/veille.md`.
@@ -46,7 +47,7 @@ idea: your profile and digests say a lot about you), clone it, then:
 ```sh
 mise install && mise run install   # Python, uv, dev tools (the fetcher itself has no dependency)
 mise run sources                   # check every feed answers
-mise run veille                    # write, commit and push today's digest
+mise run veille                    # write, commit and push a digest
 mise run install-timer             # run it every morning at 08:00
 ```
 
@@ -62,9 +63,9 @@ Then make it yours, before the first digest:
 
 | Command | What it does |
 | --- | --- |
-| `mise run veille` | Today's digest, committed and pushed. Does nothing if it already exists. |
-| `claude "/veille"` | Today's digest, written but not committed. |
-| `claude "/veille 2026-11-15"` | A digest of the items since that date. |
+| `mise run veille` | A new digest, committed and pushed. Each run gets its own file, named after its time. |
+| `mise run veille 2026-11-15` | The same, with the items since that date. |
+| `claude "/veille"` | A new digest, written but not committed. |
 | `mise run sources` | Health of every feed: item count, newest date, failures. |
 | `journalctl --user -u techwatch` | Logs of the daily runs. |
 
