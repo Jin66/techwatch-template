@@ -74,12 +74,20 @@ Then make it yours, before the first digest:
 Each run writes its own file, `digests/YYYY-MM-DD-HHMM.md`: a second run on the same day
 never overwrites the first.
 
+## Reactions and an evolving profile
+
+Every digest item can get a 👍 or a 👎 (from the Herdr mod, or
+`uv run techwatch-react 1 <url>`; `-1` for 👎, `0` to take it back). Votes go to
+`reactions.jsonl`, one line each, versioned with the rest. Now and then, run
+`claude "/profil"`: Claude looks for patterns in the votes, proposes the smallest edits to
+`profil.md` that explain them, applies the ones you pick and commits them.
+
 ## Herdr mod
 
 For [Herdr](https://herdr.dev) users, `herdr/techwatch/` is a mod that opens as a dialog:
 the digests on the left, the selected one rendered on the right, and a field to start a
 run, with an optional start date and focus: Claude writes the digest in a new tab, then asks
-whether to keep it.
+whether to keep it. Each item has 👍/👎 buttons that record your reactions.
 
 ![The TechWatch dialog in Herdr: digests by date on the left, the selected digest on the right](docs/herdr-mod.png)
 

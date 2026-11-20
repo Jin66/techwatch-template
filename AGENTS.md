@@ -33,9 +33,12 @@ Run one test: `uv run pytest tests/test_fetch.py -k atom`. Tests need no network
 ```
 sources.md                  feeds, one `- <url>` per line under a `## <category>`
 profil.md                   the filter: interests, stack, exclusions (French)
+reactions.jsonl             👍/👎 on digest items, last vote per URL wins (absent until a vote)
 digests/                    one file per run (French), written by `/veille`
 src/techwatch/fetch.py      feed collection: window since last digest, dedup by URL
+src/techwatch/reactions.py  records a vote (`techwatch-react`), reads the votes back
 .claude/commands/veille.md  the prompt that turns collected items into a digest
+.claude/commands/profil.md  proposes profil.md edits from the votes
 .claude/settings.json       permissions that let `claude -p` run unattended
 scripts/daily.sh            runs `/veille --unattended` headless, then keeps the digest
 scripts/keep.sh             commits and pushes one digest (daily.sh, and /veille on request)

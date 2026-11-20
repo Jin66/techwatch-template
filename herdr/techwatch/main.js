@@ -1,13 +1,27 @@
 // TechWatch: read the daily digests and start a new run, without leaving Herdr.
 // Opened as a dialog by mod.open:techwatch (ctrl-shift-d). Starting a run opens Claude on
 // /veille in a tab, from the given date on and with the given focus if any; Claude asks
-// whether to keep it.
+// whether to keep it. 👍/👎 under each item go to reactions.jsonl, which /profil reads.
 
 import { View, div } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input, TextView } from "gpui-base";
 import { run, props, closeOverlay, theme, exec, appHome, readTextFile, spaces } from "herdr";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const ITEM_RE = /^## \d+\. \[(.+)\]\((.+?)\)/;
+
+// The digest cut at its `## ` headings: items carry their title and URL, so they can be voted on.
+const sectionsOf = (text) => text.split(/\n(?=## )/).map((part) => {
+  const m = part.match(ITEM_RE);
+  return { text: part, title: m?.[1], url: m?.[2] };
+});
+
+// reactions.jsonl: one vote per line, the last one on a URL counts (see techwatch/reactions.py).
+const votesOf = (text) => {
+  const votes = {};
+  for (const line of (text ?? "").split("\n")) if (line.trim()) { const e = JSON.parse(line); votes[e.url] = e.vote; }
+  return votes;
+};
 
 export default class TechWatch extends View {
   init(_props, cx) {
@@ -21,10 +35,12 @@ export default class TechWatch extends View {
     this.focus = InputState.new({ placeholder: "Orientation, optionnelle : regarde en particulier le monitoring Java" });
     this.focus.on("submit", (_e, cx) => this.launch(cx));
     this.repo = null;
+    this.votes = {};
     cx.spawn(async (cx) => {
       // `mise run install-herdr-mod` links this folder from the clone: the link leads back to it.
       const link = await exec("readlink", ["-f", `${appHome()}/mods/techwatch`]);
       this.repo = link.stdout.trim().replace(/\/herdr\/techwatch$/, "");
+      this.votes = votesOf(await readTextFile(`${this.repo}/reactions.jsonl`).catch(() => null));
       const r = await exec("ls", [`${this.repo}/digests`]);
       this.dates = r.stdout.split("\n").filter((f) => /^\d{4}-\d{2}-\d{2}(-\d{4})?\.md$/.test(f)).map((f) => f.slice(0, -3)).sort().reverse();
       if (r.code !== 0) this.error = `Pas de digests dans ${this.repo}/digests`;
@@ -37,6 +53,17 @@ export default class TechWatch extends View {
     this.selected = date;
     this.content = await readTextFile(`${this.repo}/digests/${date}.md`).catch((e) => `Lecture impossible : ${e}`);
     cx.notify();
+  }
+
+  vote(section, vote, cx) {
+    const next = this.votes[section.url] === vote ? 0 : vote; // a second click takes the vote back
+    this.votes[section.url] = next;
+    cx.notify();
+    cx.spawn(async (cx) => {
+      const r = await exec("uv", ["run", "--project", this.repo, "techwatch-react", String(next), section.url,
+        "--title", section.title, "--file", `${this.repo}/reactions.jsonl`], { cwd: this.repo });
+      if (r.code !== 0) { this.error = `Vote non enregistré : ${(r.stderr || r.stdout).trim().split("\n").pop()}`; cx.notify(); }
+    });
   }
 
   launch(cx) {
@@ -79,7 +106,21 @@ export default class TechWatch extends View {
       .child(h_flex().flex_1().min_h(0).items_stretch().gap(14) // h_flex centers its items: the columns must fill the height
         .child(v_flex().id("tw-list").w(130).flex_none().min_h(0).gap(2).overflow_y_scroll()
           .children(this.dates.length ? this.dates.map(row) : [div().text_size(12).text_color(t.dim).child("Aucun digest")]))
-        .child(v_flex().id("tw-digest").flex_1().min_w(0).min_h(0).px(16).py(12).rounded(8).bg(t.background).overflow_y_scroll()
-          .text_size(13).child(TextView.markdown(`tw-md-${this.selected}`, this.content).selectable(true))));
+        .child(v_flex().id("tw-digest").flex_1().min_w(0).min_h(0).px(16).py(12).gap(16).rounded(8).bg(t.background).overflow_y_scroll()
+          .text_size(13).children(sectionsOf(this.content).map((section, i) => this.section(section, i, t)))));
+  }
+
+  section(section, i, t) {
+    const chip = (vote, glyph, color) => {
+      const on = this.votes[section.url] === vote;
+      return h_flex().id(`tw-vote-${this.selected}-${i}-${vote}`).h(24).px(8).items_center().rounded(6).cursor_pointer()
+        .border_1().border_color(on ? t[color] : t.border).bg(on ? t[color] + "26" : t.background)
+        .hover((s) => s.bg(t.hover)).on_click((_e, cx) => this.vote(section, vote, cx)).child(glyph);
+    };
+    return v_flex().gap(4)
+      .child(TextView.markdown(`tw-md-${this.selected}-${i}`, section.text).selectable(true))
+      .when(Boolean(section.url), (el) => el.child(h_flex().gap(6)
+        .child(chip(1, "👍", "done"))
+        .child(chip(-1, "👎", "blocked"))));
   }
 }
