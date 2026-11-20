@@ -24,9 +24,10 @@ sources.md ──> techwatch-fetch ──> JSON of new items ──> /veille (Cl
 3. **Write.** Each item gets a two-sentence summary and a "why it matters to you" line
    tied to the profile. Feeds that failed are listed at the end, so `sources.md` can be
    fixed.
-4. **Publish.** `scripts/daily.sh` commits the digest and pushes it. A systemd user timer
-   runs it at 08:00, catches up at the next boot when the machine was off, and skips the
-   day if a digest was already written by hand.
+4. **Publish.** `scripts/keep.sh` commits the digest and pushes it. Run by hand, `/veille`
+   first asks whether to keep the digest; the daily job, `scripts/daily.sh`, keeps it
+   without asking. A systemd user timer runs the daily job at 08:00, catches up at the
+   next boot when the machine was off, and skips the day if a digest already exists.
 
 The digest and the profile are in French. Change the language in
 `.claude/commands/veille.md`.
@@ -35,8 +36,8 @@ The digest and the profile are in French. Change the language in
 
 - Linux with systemd, for the daily timer. Everything else works anywhere.
 - [mise](https://mise.jdx.dev), which installs Python 3.13 and uv.
-- [Claude Code](https://claude.com/claude-code), logged in. Each digest is one headless
-  `claude -p` run and uses your plan or API usage.
+- [Claude Code](https://claude.com/claude-code), logged in. Each digest is one Claude Code
+  session (headless for the daily job) and uses your plan or API usage.
 - A git remote, if you want the digests pushed.
 
 ## Getting started
@@ -53,8 +54,8 @@ mise run install-timer             # run it every morning at 08:00
 
 Then make it yours, before the first digest:
 
-- **`profil.md`** is the filter; the one here is an example to replace. When a digest misses, edit the profile rather than the
-  prompt: add an interest, sharpen an exclusion.
+- **`profil.md`** is the filter; the one here is an example to replace. When a digest
+  misses, edit the profile rather than the prompt: add an interest, sharpen an exclusion.
 - **`sources.md`** lists the feeds, one `- <url>  # label` per line under a
   `## <category>` heading. Run `mise run sources` before adding one: some sites refuse
   scripts.
@@ -63,11 +64,14 @@ Then make it yours, before the first digest:
 
 | Command | What it does |
 | --- | --- |
-| `mise run veille` | A new digest, committed and pushed. Each run gets its own file, named after its time. |
-| `mise run veille 2026-11-15` | The same, with the items since that date. |
 | `claude "/veille"` | A new digest in an interactive session; Claude then asks whether to keep it (commit and push) or drop it. |
+| `claude "/veille 2026-11-15"` | The same, with the items since that date. |
+| `mise run veille [2026-11-15]` | The daily job by hand: a new digest, headless, committed and pushed without asking. |
 | `mise run sources` | Health of every feed: item count, newest date, failures. |
 | `journalctl --user -u techwatch` | Logs of the daily runs. |
+
+Each run writes its own file, `digests/YYYY-MM-DD-HHMM.md`: a second run on the same day
+never overwrites the first.
 
 ## Herdr mod
 
@@ -87,14 +91,15 @@ Then bind a key in `~/.config/herdr-app/keys.json`, under `global`:
 
 ## Things to know
 
-- **Permissions.** `.claude/settings.json` lets the headless run use only the fetcher,
-  read files, edit `digests/` and fetch web pages. Nothing else runs without a prompt.
+- **Permissions.** `.claude/settings.json` lets `/veille` run the fetcher and
+  `scripts/keep.sh`, read files, edit `digests/` and fetch web pages. Nothing else runs
+  without a prompt, and `keep.sh` commits nothing but an existing file of `digests/`.
 - **History drives the dedup.** Renaming or rewriting old digests changes what gets
   proposed next.
 - **Reddit** answers 404 to anonymous feeds since November 2026; it would need its
   official API with an OAuth app.
-- **Moving the clone.** `mise run install-timer` writes the clone's path into the
-  systemd service: run it again after moving the repository.
+- **Moving the clone.** `mise run install-timer` and `mise run install-herdr-mod` record
+  the clone's path: run them again after moving the repository.
 
 ## Getting the template's updates
 
