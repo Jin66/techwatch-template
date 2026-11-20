@@ -70,6 +70,8 @@ def make_repo(root: Path) -> None:
         "Dockerfile": DOCKERFILE,
         "docker-compose.yml": COMPOSE,
         "mise.toml": '[tools]\njava = "25"\n',
+        ".tool-versions": "# pinned\nnodejs 22.11.0\n",
+        "worker/Containerfile": "FROM python:3.13-slim\n",
         "front/node_modules/x/package.json": '{"dependencies": {"ignored": "1"}}',
         "broken/pom.xml": "<project>",
     }
@@ -92,13 +94,15 @@ def test_inventory_reads_every_build_and_container_file(tmp_path: Path):
         ("maven", "org.glassfish.jersey:jersey-server", "3.1.0"),
         ("runtime", "java", "21"),
         ("pypi", "pydantic-ai", "2.70.0"),
-        ("pypi", "fastapi", "[standard]"),
+        ("pypi", "fastapi", "?"),
         ("runtime", "python", ">=3.13"),
         ("npm", "@angular/core", "^20.1.0"),
         ("image", "node", "24-alpine"),
         ("image", "eclipse-temurin", "25-jre-noble"),
         ("image", "mongo", "9.0.4"),
         ("image", "nginx", "latest"),
+        ("runtime", "nodejs", "22.11.0"),
+        ("image", "python", "3.13-slim"),
     }
     assert {u.repo for u in inventory([tmp_path])} == {"team/app"}
 

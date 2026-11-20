@@ -89,7 +89,9 @@ uv run techwatch-stack "spring boot" nginx     # which repositories use them, pe
 ```
 
 Nothing is stored: each call reads the working trees as they are. Versions set elsewhere
-(a BOM, an Ansible variable, a CI parameter) are not seen.
+(a BOM, an Ansible variable, a CI parameter) are not seen, nor Groovy `build.gradle`
+dependencies written with named arguments. Digests then name your repositories: one more
+reason to keep your copy private.
 
 ## Reactions and an evolving profile
 

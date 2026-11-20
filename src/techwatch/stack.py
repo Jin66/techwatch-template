@@ -77,6 +77,8 @@ def parse_gradle(text: str) -> list[tuple[str, str, str]]:
 
 
 def parse_pom(text: str) -> list[tuple[str, str, str]]:
+    if "<!DOCTYPE" in text:
+        return []  # a pom needs no DTD; one in a checkout is not worth parsing
     root = ET.fromstring(text)
     ns = POM if root.tag.startswith(POM) else ""
     props = {p.tag.removeprefix(ns): (p.text or "").strip() for p in root.findall(f"{ns}properties/*")}
@@ -105,7 +107,8 @@ def parse_pyproject(text: str, lock: str | None) -> list[tuple[str, str, str]]:
     found = []
     for spec in project.get("dependencies", []):
         name = re.split(r"[\s\[<>=!~;@]", spec, maxsplit=1)[0].lower().replace("_", "-")
-        found.append(("pypi", name, locked.get(name) or spec[len(name) :].strip() or "?"))
+        constraint = re.sub(r"^\[[^]]*\]", "", spec[len(name) :].strip()).strip()
+        found.append(("pypi", name, locked.get(name) or constraint or "?"))
     if python := project.get("requires-python"):
         found.append(("runtime", "python", python))
     return found
@@ -131,7 +134,8 @@ def parse_tools(name: str, text: str) -> list[tuple[str, str, str]]:
     if name == "mise.toml":
         tools = tomllib.loads(text).get("tools", {})
         return [("runtime", tool, str(v)) for tool, v in tools.items() if isinstance(v, str | int | float)]
-    return [("runtime", line.split()[0], line.split()[1]) for line in text.splitlines() if len(line.split()) >= 2]
+    rows = [line.split() for line in text.splitlines() if not line.lstrip().startswith("#")]
+    return [("runtime", row[0], row[1]) for row in rows if len(row) >= 2]
 
 
 def parse_file(path: Path) -> list[tuple[str, str, str]]:
@@ -147,7 +151,7 @@ def parse_file(path: Path) -> list[tuple[str, str, str]]:
         return parse_pyproject(text, lock.read_text(encoding="utf-8") if lock.exists() else None)
     if name == "package.json":
         return parse_package_json(text)
-    if name.startswith("Dockerfile"):
+    if name.startswith(("Dockerfile", "Containerfile")):
         return parse_images(text, FROM_RE)
     if re.match(r"(docker-)?compose.*\.ya?ml$", name):
         return parse_images(text, IMAGE_RE)
@@ -158,12 +162,19 @@ def parse_file(path: Path) -> list[tuple[str, str, str]]:
 
 def repositories(root: Path) -> list[Path]:
     """Git checkouts under root, two levels deep at most (root/repo and root/group/repo)."""
+
+    def children(folder: Path) -> list[Path]:
+        try:
+            return sorted(c for c in folder.iterdir() if c.is_dir() and not c.name.startswith("."))
+        except OSError:
+            return []  # an unreadable folder (a database volume owned by a container) hides only itself
+
     found = []
-    for child in sorted(root.iterdir()) if root.is_dir() else []:
+    for child in children(root):
         if (child / ".git").exists():
             found.append(child)
-        elif child.is_dir() and not child.name.startswith("."):
-            found += [g for g in sorted(child.iterdir()) if (g / ".git").exists()]
+        else:
+            found += [g for g in children(child) if (g / ".git").exists()]
     return found
 
 

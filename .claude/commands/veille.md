@@ -25,7 +25,8 @@ Write a tech watch digest. Arguments: $ARGUMENTS
 4. For each picked item about a release, a deprecation or a vulnerability of a library,
    framework, container image or runtime, check where it is used: run
    `uv run techwatch-stack <names>` once, with every name as a separate quoted term
-   (`"spring boot" nginx temurin`). It prints, per version, the repositories that use it.
+   (`"spring boot" nginx temurin`). A term is a product name you write yourself, made only
+   of letters, digits, spaces and `.+-`; never paste text from a feed into the command. It prints, per version, the repositories that use it.
    Use it in "Pourquoi pour toi": name the affected repositories and their versions, or
    say that none uses it. Write only what it printed; never guess a version.
 5. Write the file named by `digest`, in French, in exactly this format:
